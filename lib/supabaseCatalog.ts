@@ -78,6 +78,20 @@ type OrderRow = {
   order_items?: OrderItemRow[];
 };
 
+export type DeliveryArea = {
+  id: string;
+  name: string;
+  regionName?: string;
+};
+
+type DeliveryAreaRow = {
+  id: string;
+  name: string;
+  delivery_regions?: {
+    name: string | null;
+  } | Array<{ name: string | null }> | null;
+};
+
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -191,6 +205,32 @@ export async function fetchCollections() {
   }
 
   return (data || []).map((row) => collectionFromRow(row as CollectionRow));
+}
+
+export async function fetchActiveDeliveryAreas(): Promise<DeliveryArea[]> {
+  if (!supabase) {
+    throw new Error("Supabase is not connected.");
+  }
+
+  const { data, error } = await supabase
+    .from("delivery_areas")
+    .select("id, name, delivery_regions(name)")
+    .eq("is_active", true)
+    .order("name", { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map((row) => {
+    const area = row as DeliveryAreaRow;
+    const region = Array.isArray(area.delivery_regions) ? area.delivery_regions[0] : area.delivery_regions;
+    return {
+      id: area.id,
+      name: area.name,
+      regionName: region?.name || undefined
+    };
+  });
 }
 
 export async function fetchDiscountCodes() {
@@ -586,7 +626,7 @@ export async function fetchSiteSettings() {
     snapchat: data.snapchat || undefined,
     x: data.x || undefined,
     facebook: data.facebook || undefined,
-    enabledRegions: data.enabled_regions || ["Muscat, Oman"]
+    enabledRegions: data.enabled_regions || ["Muscat Governorate, Oman"]
   } satisfies SiteSettings;
 }
 
@@ -627,7 +667,7 @@ export async function upsertSiteSettings(settings: SiteSettings) {
       snapchat: settings.snapchat || null,
       x: settings.x || null,
       facebook: settings.facebook || null,
-      enabled_regions: settings.enabledRegions || ["Muscat, Oman"]
+      enabled_regions: settings.enabledRegions || ["Muscat Governorate, Oman"]
     },
     { onConflict: "id" }
   );

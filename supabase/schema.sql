@@ -182,30 +182,48 @@ create table if not exists public.delivery_areas (
 );
 
 insert into public.delivery_regions (name, country, is_active)
-values ('Muscat', 'Oman', true)
+values ('Muscat Governorate', 'Oman', true)
 on conflict (name) do update set is_active = excluded.is_active;
 
 with muscat as (
-  select id from public.delivery_regions where name = 'Muscat' and country = 'Oman'
+  select id from public.delivery_regions where name = 'Muscat Governorate' and country = 'Oman'
 )
 insert into public.delivery_areas (region_id, name, is_active)
 select muscat.id, area.name, true
 from muscat
 cross join (values
-  ('Al Khuwair'),
-  ('Al Ghubrah'),
-  ('Bausher'),
-  ('Qurum'),
-  ('Madinat Al Sultan Qaboos'),
-  ('Ruwi'),
+  ('Muscat'),
   ('Muttrah'),
-  ('Azaiba'),
+  ('Bawshar'),
   ('Seeb'),
-  ('Al Hail'),
-  ('Mawaleh'),
-  ('Muscat Hills')
+  ('Al Amerat'),
+  ('Qurayyat')
 ) as area(name)
 on conflict (region_id, name) do update set is_active = excluded.is_active;
+
+update public.delivery_regions
+set is_active = false
+where country = 'Oman'
+and name <> 'Muscat Governorate';
+
+with muscat as (
+  select id from public.delivery_regions where name = 'Muscat Governorate' and country = 'Oman'
+),
+official_wilayats as (
+  select name
+  from (values
+    ('Muscat'),
+    ('Muttrah'),
+    ('Bawshar'),
+    ('Seeb'),
+    ('Al Amerat'),
+    ('Qurayyat')
+  ) as wilayat(name)
+)
+update public.delivery_areas
+set is_active = false
+where region_id <> (select id from muscat)
+or name not in (select name from official_wilayats);
 
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
@@ -444,7 +462,7 @@ create table if not exists public.site_settings (
   snapchat text,
   x text,
   facebook text,
-  enabled_regions text[] not null default array['Muscat, Oman'],
+  enabled_regions text[] not null default array['Muscat Governorate, Oman'],
   updated_at timestamptz not null default now(),
   constraint site_settings_singleton check (id = true)
 );
@@ -468,7 +486,7 @@ alter table public.site_settings
   add column if not exists verification_message text;
 
 insert into public.site_settings (id, enabled_regions)
-values (true, array['Muscat, Oman'])
+values (true, array['Muscat Governorate, Oman'])
 on conflict (id) do nothing;
 
 create table if not exists public.policies (

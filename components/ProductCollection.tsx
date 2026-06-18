@@ -2,15 +2,32 @@
 
 import { ProductCard } from "@/components/ProductCard";
 import type { Product } from "@/lib/data";
-import { useStoredCollections } from "@/lib/useStoredCollections";
-import { useStoredProducts } from "@/lib/useStoredProducts";
+import { useCollectionsResource } from "@/lib/useStoredCollections";
+import { useProductsResource } from "@/lib/useStoredProducts";
 import { SafeImage } from "@/components/SafeImage";
 
 export function ProductCollection({ limit, grouped = false }: { limit?: number; grouped?: boolean }) {
-  const items = useStoredProducts();
-  const collections = useStoredCollections();
+  const { products: items, isLoading: productsLoading } = useProductsResource();
+  const { collections, isLoading: collectionsLoading } = useCollectionsResource();
+  const isLoading = productsLoading || (grouped && collectionsLoading);
 
   const visibleItems = typeof limit === "number" ? items.slice(0, limit) : items;
+
+  if (isLoading) {
+    const skeletonCount = limit || 4;
+    return (
+      <div className={limit ? "grid gap-10 md:grid-cols-3" : "grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}>
+        {Array.from({ length: skeletonCount }).map((_, index) => (
+          <article key={index}>
+            <div className="aspect-[4/5] animate-pulse border border-ink/10 bg-porcelain" />
+            <div className="mt-6 h-8 w-2/3 animate-pulse bg-porcelain" />
+            <div className="mt-3 h-5 w-full animate-pulse bg-porcelain" />
+            <div className="mt-5 h-11 w-36 animate-pulse bg-porcelain" />
+          </article>
+        ))}
+      </div>
+    );
+  }
 
   if (visibleItems.length === 0) {
     return (

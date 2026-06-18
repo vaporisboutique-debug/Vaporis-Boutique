@@ -65,23 +65,9 @@ export type DiscountCode = {
 export const deliveryFee = 2;
 export const giftWrapFee = 3;
 export const isAccountRequiredBeforeCheckout = true;
-export const deliveryNotice = "Delivery available only within Muscat, Oman.";
-export const outsideMuscatMessage = "Currently we only deliver within Muscat, Oman.";
-export const activeDeliveryRegion = "Muscat, Oman";
-export const muscatDeliveryAreas = [
-  "Al Khuwair",
-  "Al Ghubrah",
-  "Bausher",
-  "Qurum",
-  "Madinat Al Sultan Qaboos",
-  "Ruwi",
-  "Muttrah",
-  "Azaiba",
-  "Seeb",
-  "Al Hail",
-  "Mawaleh",
-  "Muscat Hills"
-];
+export const deliveryNotice = "Delivery is available within Muscat Governorate only. التوصيل متاح داخل محافظة مسقط فقط";
+export const outsideMuscatMessage = "Delivery is available within Muscat Governorate only. التوصيل متاح داخل محافظة مسقط فقط";
+export const activeDeliveryRegion = "Muscat Governorate, Oman";
 
 export const socialAccounts = {
   email: "vaporisboutique@gmail.com",

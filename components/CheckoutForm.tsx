@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BadgePercent, Banknote, Gift, MapPin } from "lucide-react";
-import { deliveryFee, deliveryNotice, formatOmr, giftWrapFee, muscatDeliveryAreas, outsideMuscatMessage } from "@/lib/data";
+import { deliveryFee, deliveryNotice, formatOmr, giftWrapFee, outsideMuscatMessage } from "@/lib/data";
 import { createSupabaseOrder } from "@/lib/supabaseCatalog";
 import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 import { clearCart, type CartItem } from "@/lib/useCart";
+import { useDeliveryAreas } from "@/lib/useDeliveryAreas";
 import { useStoredDiscountCodes } from "@/lib/useStoredDiscountCodes";
 import { notifyOrdersChanged, saveStoredOrders, useStoredOrders } from "@/lib/useStoredOrders";
 
@@ -60,6 +61,7 @@ export function CheckoutForm({ cartItems = [], productTotal }: { cartItems?: Car
   const router = useRouter();
   const orders = useStoredOrders();
   const discountCodes = useStoredDiscountCodes();
+  const { areas: deliveryAreas, isLoading: deliveryAreasLoading, error: deliveryAreasError } = useDeliveryAreas();
   const [giftSelected, setGiftSelected] = useState(false);
   const [giftMessage, setGiftMessage] = useState("");
   const [deliveryArea, setDeliveryArea] = useState("");
@@ -96,7 +98,19 @@ export function CheckoutForm({ cartItems = [], productTotal }: { cartItems?: Car
       router.replace("/cart");
       return;
     }
+    if (deliveryAreasLoading) {
+      setDeliveryError("Delivery areas are still loading. Please wait a moment.");
+      return;
+    }
+    if (deliveryAreasError) {
+      setDeliveryError("Unable to load delivery wilayats. Please refresh and try again.");
+      return;
+    }
     if (!deliveryArea) {
+      setDeliveryError(outsideMuscatMessage);
+      return;
+    }
+    if (!deliveryAreas.some((area) => area.name === deliveryArea)) {
       setDeliveryError(outsideMuscatMessage);
       return;
     }
@@ -166,7 +180,7 @@ export function CheckoutForm({ cartItems = [], productTotal }: { cartItems?: Car
     <section className="container-pad grid gap-10 py-14 lg:grid-cols-[1fr_420px]">
       <div>
         <p className="text-xs uppercase tracking-[0.28em] text-brass">Secure checkout</p>
-        <h1 className="mt-4 font-serif text-6xl">Delivery in Muscat</h1>
+        <h1 className="mt-4 font-serif text-6xl">Delivery in Muscat Governorate</h1>
         <p className="mt-5 border border-ink/10 bg-porcelain px-5 py-4 text-sm text-ink/68">{deliveryNotice}</p>
         <form className="mt-10 grid gap-6">
           <div className="grid gap-3">
@@ -174,13 +188,20 @@ export function CheckoutForm({ cartItems = [], productTotal }: { cartItems?: Car
             <input className="border border-ink/15 bg-paper px-4 py-4 outline-none focus:border-ink" placeholder="Your name" value={customerName} onChange={(event) => setCustomerName(event.target.value)} />
           </div>
           <div className="grid gap-3">
-            <label className="text-xs uppercase tracking-[0.2em]">Delivery area in Muscat</label>
-            <select className="border border-ink/15 bg-paper px-4 py-4 outline-none focus:border-ink" value={deliveryArea} onChange={(event) => setDeliveryArea(event.target.value)} required>
-              <option value="">Select Muscat area</option>
-              {muscatDeliveryAreas.map((area) => (
-                <option key={area} value={area}>{area}</option>
+            <label className="text-xs uppercase tracking-[0.2em]">Delivery wilayat</label>
+            <select
+              className="border border-ink/15 bg-paper px-4 py-4 outline-none focus:border-ink disabled:cursor-not-allowed disabled:text-ink/45"
+              value={deliveryArea}
+              onChange={(event) => setDeliveryArea(event.target.value)}
+              disabled={deliveryAreasLoading || Boolean(deliveryAreasError)}
+              required
+            >
+              <option value="">{deliveryAreasLoading ? "Loading wilayats..." : "Select wilayat"}</option>
+              {deliveryAreas.map((area) => (
+                <option key={area.id} value={area.name}>{area.name}</option>
               ))}
             </select>
+            {deliveryAreasError ? <p className="text-sm text-rosewood">Unable to load delivery wilayats. Please refresh and try again.</p> : null}
           </div>
           <div className="grid gap-3">
             <label className="text-xs uppercase tracking-[0.2em]">Muscat delivery address</label>
@@ -253,9 +274,9 @@ export function CheckoutForm({ cartItems = [], productTotal }: { cartItems?: Car
         </div>
         {deliveryError ? <p className="mt-6 border border-rosewood/25 bg-rosewood/5 px-4 py-3 text-sm text-rosewood">{deliveryError}</p> : null}
         {orderError ? <p className="mt-6 border border-rosewood/25 bg-rosewood/5 px-4 py-3 text-sm text-rosewood">{orderError}</p> : null}
-        <button type="button" onClick={submitPayment} className="mt-8 flex w-full items-center justify-center gap-2 bg-ink px-6 py-4 text-xs uppercase tracking-[0.22em] text-paper">
+        <button type="button" onClick={submitPayment} disabled={deliveryAreasLoading || Boolean(deliveryAreasError)} className="mt-8 flex w-full items-center justify-center gap-2 bg-ink px-6 py-4 text-xs uppercase tracking-[0.22em] text-paper disabled:cursor-not-allowed disabled:bg-ink/35">
           <MapPin size={16} />
-          Place order
+          {deliveryAreasLoading ? "Loading delivery" : "Place order"}
         </button>
       </aside>
     </section>

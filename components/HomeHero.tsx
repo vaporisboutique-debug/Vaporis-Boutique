@@ -1,10 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useSiteSettings } from "@/lib/useSiteSettings";
+import { useSiteSettingsResource } from "@/lib/useSiteSettings";
 
 export function HomeHero() {
-  const settings = useSiteSettings();
+  const { settings, isLoading } = useSiteSettingsResource();
+
+  if (isLoading) {
+    return (
+      <section className="container-pad py-6 sm:py-8">
+        <div className="relative flex min-h-[78vh] animate-pulse overflow-hidden border border-ink/10 bg-porcelain px-5 py-8 sm:px-10 lg:min-h-[86vh] lg:px-16">
+          <div className="mt-auto w-full max-w-4xl">
+            <div className="h-3 w-44 bg-ink/10" />
+            <div className="mt-6 h-16 w-full max-w-3xl bg-ink/10 sm:h-24" />
+            <div className="mt-4 h-16 w-full max-w-2xl bg-ink/8" />
+            <div className="mt-8 h-12 w-44 bg-ink/10" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="container-pad py-6 sm:py-8">

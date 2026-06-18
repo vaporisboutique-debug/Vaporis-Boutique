@@ -4,12 +4,13 @@ import Link from "next/link";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { formatOmr, getProductPricing } from "@/lib/data";
-import { useStoredCollections } from "@/lib/useStoredCollections";
-import { useStoredProducts } from "@/lib/useStoredProducts";
+import { useCollectionsResource } from "@/lib/useStoredCollections";
+import { useProductsResource } from "@/lib/useStoredProducts";
 
 export function HeaderSearch() {
-  const products = useStoredProducts();
-  const collections = useStoredCollections();
+  const { products, isLoading: productsLoading } = useProductsResource();
+  const { collections, isLoading: collectionsLoading } = useCollectionsResource();
+  const isLoading = productsLoading || collectionsLoading;
   const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [collectionId, setCollectionId] = useState("");
@@ -105,7 +106,13 @@ export function HeaderSearch() {
 
       {searchIsActive ? (
         <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-[70vh] overflow-auto border border-ink/12 bg-paper p-3 normal-case tracking-normal shadow-soft">
-          {results.length > 0 ? (
+          {isLoading ? (
+            <div className="grid gap-2 p-2">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="h-16 animate-pulse border border-ink/8 bg-porcelain" />
+              ))}
+            </div>
+          ) : results.length > 0 ? (
             <div className="grid gap-2">
               {results.map((product) => {
                 const collection = collections.find((item) => item.id === product.collectionId);

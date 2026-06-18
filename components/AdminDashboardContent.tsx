@@ -328,7 +328,7 @@ export function AdminDashboardContent() {
       email: String(formData.get("email") || ""),
       accentColor: String(formData.get("accentColor") || ""),
       footerText: String(formData.get("footerText") || ""),
-      enabledRegions: ["Muscat, Oman"]
+      enabledRegions: ["Muscat Governorate, Oman"]
     });
   }
 
@@ -585,9 +585,9 @@ export function AdminDashboardContent() {
               <p className="text-xs uppercase tracking-[0.18em] text-ink/48">Delivery regions</p>
               <label className="mt-3 flex items-center gap-2">
                 <input type="checkbox" checked readOnly />
-                Muscat, Oman
+                Muscat Governorate, Oman
               </label>
-              <p className="mt-3 text-xs leading-5 text-ink/52">Additional regions can be enabled later. By default, only Muscat is active.</p>
+              <p className="mt-3 text-xs leading-5 text-ink/52">Additional regions can be enabled later. By default, only Muscat Governorate is active.</p>
             </div>
             <div className="flex items-center gap-3 pt-2">
               <Share2 size={18} />

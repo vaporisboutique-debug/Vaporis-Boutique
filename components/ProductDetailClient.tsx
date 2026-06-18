@@ -5,12 +5,27 @@ import { useState } from "react";
 import { ProductArt } from "@/components/ProductArt";
 import { formatOmr, getProductPricing, isLowStock, isOutOfStock } from "@/lib/data";
 import { addCartProduct } from "@/lib/useCart";
-import { useStoredProducts } from "@/lib/useStoredProducts";
+import { useProductsResource } from "@/lib/useStoredProducts";
 
 export function ProductDetailClient({ slug }: { slug: string }) {
-  const products = useStoredProducts();
+  const { products, isLoading } = useProductsResource();
   const [added, setAdded] = useState(false);
   const product = products.find((item) => item.slug === slug);
+
+  if (isLoading) {
+    return (
+      <section className="container-pad grid gap-10 py-12 lg:grid-cols-[1fr_0.85fr]">
+        <div className="min-h-[620px] animate-pulse border border-ink/10 bg-porcelain" />
+        <div className="flex flex-col justify-center">
+          <div className="h-3 w-36 animate-pulse bg-porcelain" />
+          <div className="mt-5 h-16 w-full max-w-lg animate-pulse bg-porcelain" />
+          <div className="mt-5 h-7 w-2/3 animate-pulse bg-porcelain" />
+          <div className="mt-8 h-32 w-full animate-pulse bg-porcelain" />
+          <div className="mt-8 h-14 w-48 animate-pulse bg-porcelain" />
+        </div>
+      </section>
+    );
+  }
 
   if (!product) {
     return (

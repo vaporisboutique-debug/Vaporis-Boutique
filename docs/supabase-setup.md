@@ -48,7 +48,7 @@ This creates the Supabase schema and storage buckets needed by the Vaporis Bouti
 12. Go to **Table Editor > profiles**.
 13. Find the profile row for that admin user.
 14. Set `profiles.is_admin` to `true`.
-15. Keep only `Muscat, Oman` active for delivery until you want to enable more regions.
+15. Keep only `Muscat Governorate, Oman` active for delivery until you want to enable more regions.
 
 ## Admin Login Setup
 
