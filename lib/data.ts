@@ -36,9 +36,15 @@ export type Order = {
   paid: boolean;
   date: string;
   deliveryArea: string;
+  deliveryAddress?: string;
+  giftWrapping?: boolean;
+  giftMessage?: string;
+  productTotal?: number;
+  giftFee?: number;
+  deliveryFee?: number;
   discountCode?: string;
   discountAmount?: number;
-  products?: Array<{ name: string; quantity: number }>;
+  products?: Array<{ name: string; quantity: number; unitPrice?: number; lineTotal?: number }>;
 };
 
 export type Profile = {

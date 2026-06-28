@@ -59,6 +59,8 @@ type ProfileRow = {
 type OrderItemRow = {
   product_name: string;
   quantity: number;
+  unit_price: number;
+  line_total: number;
 };
 
 type OrderRow = {
@@ -68,6 +70,12 @@ type OrderRow = {
   customer_name: string | null;
   customer_email: string | null;
   delivery_area_name: string;
+  delivery_address: string | null;
+  gift_wrapping: boolean;
+  gift_message: string | null;
+  product_total: number;
+  gift_fee: number;
+  delivery_fee: number;
   total: number;
   status: Order["status"];
   payment_status: "unpaid" | "paid" | null;
@@ -165,9 +173,20 @@ export function orderFromRow(row: OrderRow): Order {
     paid: row.paid,
     date: new Date(row.created_at).toLocaleDateString("en-OM"),
     deliveryArea: row.delivery_area_name,
+    deliveryAddress: row.delivery_address || undefined,
+    giftWrapping: row.gift_wrapping,
+    giftMessage: row.gift_message || undefined,
+    productTotal: Number(row.product_total || 0),
+    giftFee: Number(row.gift_fee || 0),
+    deliveryFee: Number(row.delivery_fee || 0),
     discountCode: row.discount_code || undefined,
     discountAmount: row.discount_amount ? Number(row.discount_amount) : undefined,
-    products: row.order_items?.map((item) => ({ name: item.product_name, quantity: item.quantity })) || []
+    products: row.order_items?.map((item) => ({
+      name: item.product_name,
+      quantity: item.quantity,
+      unitPrice: Number(item.unit_price || 0),
+      lineTotal: Number(item.line_total || 0)
+    })) || []
   };
 }
 
@@ -478,7 +497,7 @@ export async function fetchOrders() {
 
   const { data, error } = await supabase
     .from("orders")
-    .select("*, order_items(product_name, quantity)")
+    .select("*, order_items(product_name, quantity, unit_price, line_total)")
     .order("created_at", { ascending: false });
 
   if (error) {

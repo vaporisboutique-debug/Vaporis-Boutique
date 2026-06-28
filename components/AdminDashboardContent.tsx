@@ -626,18 +626,56 @@ export function AdminDashboardContent() {
         <h2 className="font-serif text-3xl">Orders</h2>
         {orderList.length > 0 ? (
           <div className="mt-6 overflow-x-auto">
-            <table className="w-full min-w-[820px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[1180px] border-collapse text-left text-sm">
               <thead className="border-b border-ink/12 text-xs uppercase tracking-[0.18em] text-ink/48">
-                <tr><th className="py-3">Order</th><th>Customer</th><th>Delivery area</th><th>Status</th><th>Total</th><th>Payment</th><th>Update status</th><th>Update payment</th></tr>
+                <tr><th className="py-3">Order</th><th>Customer</th><th>Delivery</th><th>Items</th><th>Gift</th><th>Status</th><th>Total</th><th>Payment</th><th>Update status</th><th>Update payment</th></tr>
               </thead>
               <tbody className="divide-y divide-ink/10">
                 {orderList.map((order) => (
-                  <tr key={order.id}>
-                    <td className="py-4 font-medium">{order.id}</td>
-                    <td>{order.customer}</td>
-                    <td>{order.deliveryArea}</td>
+                  <tr key={order.id} className="align-top">
+                    <td className="py-4 font-medium">
+                      <div>{order.id}</div>
+                      <div className="mt-1 text-xs font-normal text-ink/48">{order.date}</div>
+                    </td>
+                    <td className="py-4">
+                      <div className="font-medium">{order.customer}</div>
+                      {order.customerEmail ? <div className="mt-1 text-xs text-ink/58">{order.customerEmail}</div> : null}
+                    </td>
+                    <td className="py-4">
+                      <div>{order.deliveryArea}</div>
+                      {order.deliveryAddress ? <div className="mt-1 max-w-44 text-xs leading-5 text-ink/58">{order.deliveryAddress}</div> : null}
+                    </td>
+                    <td className="py-4">
+                      {order.products && order.products.length > 0 ? (
+                        <div className="grid min-w-72 gap-2">
+                          {order.products.map((product, index) => (
+                            <div key={`${order.id}-${product.name}-${index}`} className="grid grid-cols-[1fr_auto] gap-x-4 border-b border-ink/8 pb-2 last:border-b-0 last:pb-0">
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                <div className="mt-1 text-xs text-ink/52">Qty {product.quantity} · Unit {formatOmr(product.unitPrice || 0)}</div>
+                              </div>
+                              <div className="text-right font-medium">{formatOmr(product.lineTotal || 0)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-rosewood">No order items found</span>
+                      )}
+                    </td>
+                    <td className="py-4">
+                      <div>{order.giftWrapping ? "Yes" : "No"}</div>
+                      {order.giftMessage ? <div className="mt-1 max-w-44 text-xs leading-5 text-ink/58">{order.giftMessage}</div> : null}
+                    </td>
                     <td className="capitalize">{order.status}</td>
-                    <td>{formatOmr(order.total)}</td>
+                    <td className="py-4">
+                      <div className="font-medium">{formatOmr(order.total)}</div>
+                      <div className="mt-2 grid gap-1 text-xs text-ink/52">
+                        <span>Products: {formatOmr(order.productTotal ?? order.total)}</span>
+                        <span>Gift: {formatOmr(order.giftFee || 0)}</span>
+                        <span>Delivery: {formatOmr(order.deliveryFee || 0)}</span>
+                        {order.discountAmount ? <span>Discount: -{formatOmr(order.discountAmount)}</span> : null}
+                      </div>
+                    </td>
                     <td className="capitalize">{order.paymentStatus || (order.paid ? "paid" : "unpaid")}</td>
                     <td>
                       <select
